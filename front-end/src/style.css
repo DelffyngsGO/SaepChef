@@ -1,0 +1,65 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+header {
+    background-color: #25622C;
+    display: flex;
+    justify-content: space-between
+}
+
+header .Pf {
+    display: flex;
+    align-items: center;
+    color: #FFFFFF;
+    font-weight: 700;
+}
+
+header .Pf .PfInfo {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+}
+
+header .Pf img {
+    max-width: 50%;
+}
+
+header .Pf .PfInfo .um {
+    font-size: 19px;
+}
+
+header .Pf .PfInfo .dois {
+    font-size: 12px;
+}
+
+.Criar {
+    display: flex;
+    margin-top: 14px;
+}
+
+.Criar button {
+    background-color: #25622C;
+    color: #FFFFFF;
+    font-weight: 700;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+main {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
+
+footer {
+    background-color: #25622C;
+    color: #FFFFFF;
+    text-align: center;
+    padding: 10px 0;
+}
