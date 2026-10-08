@@ -1,76 +1,133 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <title>SAEPChef</title>
 </head>
+
 <body>
     <header>
         <div class="Pf"> <!--Perfil-->
-            <img src="profile.jpg" alt="Foto de perfil">
-            <div class="PfInfo">
-                <p class="um">SAEPChef1</p>
-                <p class="dois">@saepchef1</p>
-            </div>
+            <button type="button" id="btnFotoPerfil" class="FotoPerfil" title="Alterar foto de perfil">
+                <img id="fotoPerfil" alt="Foto de perfil" hidden>
+            </button>
+            <input type="file" id="inputFotoPerfil" accept="image/*" hidden>
+            <p class="Handle">@SAEPChef</p>
         </div>
 
-        <div class="Pesquisar"> <!--Pesquisar-->
-            <input type="text" placeholder="Pesquisar">
-        </div>
+        <h1 class="Titulo">SAEPChef</h1>
 
-        <div class="LoginRegistrar"> <!--Login/Registrar-->
-            <button>Login/Registrar</button>
+        <div class="LoginRegistrar"> <!--Login-->
+            <button type="button">LOGIN</button>
         </div>
     </header>
 
-    <div class="Criar">
-        <button>CRIAR RECEITA</button>
+    <div class="Pesquisar"> <!--Pesquisar-->
+        <input type="search" id="pesquisa" placeholder="Pesquisar">
     </div>
 
-    <main> <!--Receitas-->
-        <div class="R1">
-            <img src="$" alt="">
-            <p>RECEITA 1</p>
-            <p>Origem: Itália Tipo: Doce Chef: saepchef1</p>
-        </div>
+    <div class="Barra">
+        <button type="button" id="btnCriar">Criar receita</button>
+        <button type="button" id="btnFiltros">Filtros</button>
+    </div>
 
-        <div class="R2">
-            <img src="$" alt="">
-            <p>RECEITA 1</p>
-            <p>Origem: Itália Tipo: Doce Chef: saepchef1</p>
-        </div>
-
-        <div class="R3">
-            <img src="$" alt="">
-            <p>RECEITA 1</p>
-            <p>Origem: Itália Tipo: Doce Chef: saepchef1</p>
-        </div>
-
-        <div class="R4">
-            <img src="$" alt="">
-            <p>RECEITA 1</p>
-            <p>Origem: Itália Tipo: Doce Chef: saepchef1</p>
-        </div>
-
-        <div class="R5">
-            <img src="$" alt="">
-            <p>RECEITA 1</p>
-            <p>Origem: Itália Tipo: Doce Chef: saepchef1</p>
-        </div>
-
-        <div class="R6">
-            <img src="$" alt="">
-            <p>RECEITA 1</p>
-            <p>Origem: Itália Tipo: Doce Chef: saepchef1</p>
-        </div>
+    <main>
+        <div class="Receitas" id="listaReceitas"></div>
     </main>
+
+    <nav class="Paginacao" id="paginacao" aria-label="Páginas do cardápio" hidden></nav>
 
     <footer>
         <h2>@SAEPChef©2026</h2>
     </footer>
 
+    <!-- Pop-up: nova receita -->
+    <dialog id="modalReceita" class="Modal">
+        <form id="formReceita">
+            <h2>Nova receita</h2>
+
+            <label>
+                Foto
+                <input type="file" id="foto" accept="image/*" required>
+            </label>
+            <img id="previa" class="Previa" alt="Prévia da foto" hidden>
+
+            <label>
+                Nome
+                <input type="text" id="nome" required>
+            </label>
+
+            <label>
+                Origem
+                <input type="text" id="origem" required>
+            </label>
+
+            <label>
+                Tipo
+                <select id="tipo" required>
+                    <option value="" disabled selected>Selecione</option>
+                    <option value="Doce">Doce</option>
+                    <option value="Salgado">Salgado</option>
+                    <option value="Agridoce">Agridoce</option>
+                </select>
+            </label>
+
+            <label>
+                Chef
+                <input type="text" id="chef" required>
+            </label>
+
+            <section class="AreaReceita">
+                <h3>Receita</h3>
+
+                <div class="Ingredientes">
+                    <span class="Rotulo">Ingredientes</span>
+                    <div id="listaIngredientes"></div>
+                    <button type="button" id="btnAddIngrediente" class="Secundario">+ Adicionar ingrediente</button>
+                </div>
+
+                <label>
+                    Modo de preparo
+                    <textarea id="preparo" rows="5" required></textarea>
+                </label>
+            </section>
+
+            <div class="Acoes">
+                <button type="button" id="btnCancelar" class="Cancelar">CANCELAR</button>
+                <button type="submit">SALVAR</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Pop-up: filtros -->
+    <dialog id="modalFiltros" class="Modal">
+        <form id="formFiltros">
+            <h2>Filtros</h2>
+
+            <label>
+                Tipo
+                <select id="filtroTipo">
+                    <option value="">Todos</option>
+                    <option value="Doce">Doce</option>
+                    <option value="Salgado">Salgado</option>
+                    <option value="Agridoce">Agridoce</option>
+                </select>
+            </label>
+
+            <div class="Acoes">
+                <button type="button" id="btnLimparFiltros" class="Cancelar">LIMPAR</button>
+                <button type="submit">APLICAR</button>
+            </div>
+        </form>
+    </dialog>
+
     <script src="script.js"></script>
 </body>
+
 </html>
