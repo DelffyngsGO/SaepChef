@@ -153,11 +153,8 @@ function receitasFiltradas() {
 
     return receitas.filter((r) => {
         const bateTipo = !filtroTipo || r.tipo === filtroTipo;
-        const bateBusca =
-            !termo ||
-            r.nome.toLowerCase().includes(termo) ||
-            r.origem.toLowerCase().includes(termo) ||
-            r.chef.toLowerCase().includes(termo);
+        // A pesquisa considera apenas o título (nome) da receita
+        const bateBusca = !termo || r.nome.toLowerCase().includes(termo);
         return bateTipo && bateBusca;
     });
 }
@@ -349,14 +346,52 @@ modalFiltros.addEventListener("click", (e) => {
     if (e.target === modalFiltros) modalFiltros.close();
 });
 
-// ---------- Foto de perfil ----------
+// ---------- Perfil ----------
 const btnFotoPerfil = document.getElementById("btnFotoPerfil");
 const inputFotoPerfil = document.getElementById("inputFotoPerfil");
 const fotoPerfil = document.getElementById("fotoPerfil");
+const iniciais = document.getElementById("iniciais");
+const nomePerfil = document.getElementById("nomePerfil");
+const handlePerfil = document.getElementById("handlePerfil");
 
 function mostrarFotoPerfil(src) {
     fotoPerfil.src = src;
     fotoPerfil.hidden = false;
+    iniciais.hidden = true;
+}
+
+function esconderFotoPerfil() {
+    fotoPerfil.removeAttribute("src");
+    fotoPerfil.hidden = true;
+    iniciais.hidden = false;
+}
+
+function gerarIniciais(nome) {
+    const partes = nome.trim().split(/\s+/).filter(Boolean);
+    if (!partes.length) return "V";
+    const primeira = partes[0][0];
+    const ultima = partes.length > 1 ? partes[partes.length - 1][0] : "";
+    return (primeira + ultima).toUpperCase();
+}
+
+function gerarHandle(nome) {
+    const base = nome
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/[^a-zA-Z0-9]/g, "");
+    return "@" + (base || "SAEPChef");
+}
+
+function atualizarPerfil() {
+    if (usuarioLogado) {
+        nomePerfil.textContent = usuarioLogado.nome;
+        handlePerfil.textContent = gerarHandle(usuarioLogado.nome);
+        iniciais.textContent = gerarIniciais(usuarioLogado.nome);
+    } else {
+        nomePerfil.textContent = "Visitante";
+        handlePerfil.textContent = "@SAEPChef";
+        iniciais.textContent = "V";
+    }
 }
 
 try {
@@ -387,6 +422,146 @@ inputFotoPerfil.addEventListener("change", () => {
     inputFotoPerfil.value = "";
 });
 
+// ---------- Pop-up: login / registro ----------
+// Aviso: sem back-end, a conta fica só no navegador (localStorage).
+// A senha é guardada como hash SHA-256, mas isto é uma demonstração, não segurança real.
+const btnLogin = document.getElementById("btnLogin");
+const modalAuth = document.getElementById("modalAuth");
+const formAuth = document.getElementById("formAuth");
+const btnFecharAuth = document.getElementById("btnFecharAuth");
+const tituloAuth = document.getElementById("tituloAuth");
+const abaLogin = document.getElementById("abaLogin");
+const abaRegistro = document.getElementById("abaRegistro");
+const campoNome = document.getElementById("campoNome");
+const authNome = document.getElementById("authNome");
+const authEmail = document.getElementById("authEmail");
+const authSenha = document.getElementById("authSenha");
+const authErro = document.getElementById("authErro");
+const btnConectar = document.getElementById("btnConectar");
+
+let modoRegistro = false;
+
+function lerStorage(chave, padrao) {
+    try {
+        const bruto = localStorage.getItem(chave);
+        return bruto ? JSON.parse(bruto) : padrao;
+    } catch (erro) {
+        return padrao;
+    }
+}
+
+function salvarStorage(chave, valor) {
+    try {
+        localStorage.setItem(chave, JSON.stringify(valor));
+    } catch (erro) {
+        console.warn("Não foi possível salvar:", erro);
+    }
+}
+
+async function hashSenha(senha) {
+    const dados = new TextEncoder().encode(senha);
+    const buffer = await crypto.subtle.digest("SHA-256", dados);
+    return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+let usuarioLogado = lerStorage("usuarioLogado", null);
+
+function mostrarErro(mensagem) {
+    authErro.textContent = mensagem;
+    authErro.hidden = !mensagem;
+}
+
+function definirModo(registro) {
+    modoRegistro = registro;
+    campoNome.hidden = !registro;
+    authNome.required = registro;
+    authSenha.autocomplete = registro ? "new-password" : "current-password";
+
+    abaLogin.classList.toggle("Ativa", !registro);
+    abaRegistro.classList.toggle("Ativa", registro);
+    abaLogin.setAttribute("aria-selected", String(!registro));
+    abaRegistro.setAttribute("aria-selected", String(registro));
+
+    tituloAuth.textContent = registro ? "CRIAR CONTA" : "LOGAR";
+    btnConectar.textContent = registro ? "REGISTRAR" : "CONECTAR";
+    mostrarErro("");
+}
+
+function abrirAuth() {
+    definirModo(false);
+    modalAuth.showModal();
+    authEmail.focus();
+}
+
+function fecharAuth() {
+    modalAuth.close();
+    formAuth.reset();
+    mostrarErro("");
+}
+
+function atualizarBotaoLogin() {
+    btnLogin.textContent = usuarioLogado ? "SAIR" : "LOGIN";
+}
+
+function sair() {
+    usuarioLogado = null;
+    try {
+        localStorage.removeItem("usuarioLogado");
+    } catch (erro) {
+        /* ignora */
+    }
+    atualizarBotaoLogin();
+    atualizarPerfil();
+}
+
+btnLogin.addEventListener("click", () => (usuarioLogado ? sair() : abrirAuth()));
+btnFecharAuth.addEventListener("click", fecharAuth);
+abaLogin.addEventListener("click", () => definirModo(false));
+abaRegistro.addEventListener("click", () => definirModo(true));
+
+modalAuth.addEventListener("click", (e) => {
+    if (e.target === modalAuth) fecharAuth();
+});
+modalAuth.addEventListener("cancel", (e) => {
+    e.preventDefault(); // Esc
+    fecharAuth();
+});
+
+formAuth.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const nome = authNome.value.trim();
+    const email = authEmail.value.trim().toLowerCase();
+    const senha = authSenha.value;
+
+    if (modoRegistro && !nome) return mostrarErro("Informe seu nome.");
+    if (!/^\S+@\S+\.\S+$/.test(email)) return mostrarErro("Informe um e-mail válido.");
+    if (senha.length < 6) return mostrarErro("A senha deve ter pelo menos 6 caracteres.");
+
+    const usuarios = lerStorage("usuarios", []);
+    const hash = await hashSenha(senha);
+
+    if (modoRegistro) {
+        if (usuarios.some((u) => u.email === email)) {
+            return mostrarErro("Este e-mail já está cadastrado.");
+        }
+        usuarios.push({ nome, email, hash });
+        salvarStorage("usuarios", usuarios);
+        usuarioLogado = { nome, email };
+    } else {
+        const usuario = usuarios.find((u) => u.email === email && u.hash === hash);
+        if (!usuario) return mostrarErro("E-mail ou senha incorretos.");
+        usuarioLogado = { nome: usuario.nome, email: usuario.email };
+    }
+
+    salvarStorage("usuarioLogado", usuarioLogado);
+    atualizarBotaoLogin();
+    atualizarPerfil();
+    fecharAuth();
+});
+
 // ---------- Início ----------
+atualizarBotaoLogin();
+atualizarPerfil();
 resetarIngredientes();
 renderizarReceitas();

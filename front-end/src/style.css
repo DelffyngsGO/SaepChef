@@ -38,31 +38,33 @@ header {
 
 header .Pf {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 3px;
+    gap: 12px;
     width: fit-content;
+    min-width: 0;
 }
 
 header .Pf .FotoPerfil {
-    width: 56px;
-    height: 56px;
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
     flex-shrink: 0;
     padding: 0;
-    border: none;
+    border: 2px solid var(--pessego);
     border-radius: 50%;
     overflow: hidden;
     background-color: var(--marrom);
+    color: var(--pessego);
     cursor: pointer;
-}
-
-header .Pf .FotoPerfil:hover {
-    opacity: 0.85;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 header .Pf .FotoPerfil:focus-visible {
     outline: 2px solid var(--pessego);
-    outline-offset: 2px;
+    outline-offset: 3px;
 }
 
 header .Pf .FotoPerfil img {
@@ -72,14 +74,61 @@ header .Pf .FotoPerfil img {
     object-fit: cover;
 }
 
-header .Pf .FotoPerfil img[hidden] {
+header .Pf .FotoPerfil img[hidden],
+header .Pf .FotoPerfil .Iniciais[hidden] {
     display: none;
 }
 
-header .Pf .Handle {
-    color: #FDE0C4;
+header .Pf .FotoPerfil .Iniciais {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* Indicação "Alterar" ao passar o mouse */
+header .Pf .FotoPerfil .Camera {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(87, 69, 51, 0.75);
+    color: var(--pessego);
     font-size: 10px;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+header .Pf .FotoPerfil:hover .Camera,
+header .Pf .FotoPerfil:focus-visible .Camera {
+    opacity: 1;
+}
+
+header .Pf .PfInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+header .Pf .Nome {
+    color: var(--pessego);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 160px;
+}
+
+header .Pf .Handle {
+    color: var(--pessego);
+    opacity: 0.8;
+    font-size: 11px;
+    font-weight: 400;
 }
 
 header .Titulo {
@@ -481,9 +530,115 @@ main .Card .ReceitaConteudo::-webkit-scrollbar-thumb:hover,
     text-transform: uppercase;
 }
 
+/* ---------- Pop-up: login / registro ---------- */
+.ModalAuth {
+    max-width: 340px;
+}
+
+.ModalAuth form {
+    position: relative;
+    gap: 16px;
+}
+
+.ModalAuth h2 {
+    text-align: center;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    color: var(--marrom-claro);
+}
+
+.Modal .Fechar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    background: transparent;
+    color: var(--marrom);
+    font-size: 14px;
+    border-radius: 50%;
+}
+
+.Modal .Fechar:hover {
+    background-color: rgba(87, 69, 51, 0.12);
+}
+
+.ModalAuth .Abas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 4px;
+    background-color: rgba(87, 69, 51, 0.12);
+    border-radius: 8px;
+}
+
+.Modal .Aba {
+    padding: 8px 0;
+    background: transparent;
+    color: var(--marrom);
+    font-size: 13px;
+}
+
+.Modal .Aba.Ativa {
+    background-color: var(--marrom);
+    color: var(--pessego);
+}
+
+.ModalAuth label[hidden] {
+    display: none;
+}
+
+.ModalAuth input {
+    background-color: var(--marrom-claro);
+    border-color: var(--marrom-claro);
+    color: var(--pessego);
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.ModalAuth input::placeholder {
+    color: var(--pessego);
+    opacity: 0.8;
+}
+
+.ModalAuth input:focus-visible {
+    border-color: var(--marrom);
+}
+
+.ModalAuth .Erro {
+    color: #8B1E1E;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.ModalAuth .Erro[hidden] {
+    display: none;
+}
+
+.Modal .Conectar {
+    align-self: center;
+    padding: 10px 28px;
+    background-color: transparent;
+    color: var(--marrom-claro);
+    border: 3px solid var(--marrom-claro);
+    font-size: 16px;
+    letter-spacing: 0.5px;
+}
+
+.Modal .Conectar:hover {
+    background-color: var(--marrom-claro);
+    color: var(--pessego);
+}
+
 /* ---------- Telas pequenas ---------- */
 @media (max-width: 600px) {
     main .Receitas {
         grid-template-columns: 1fr;
+    }
+
+    header .Pf .Nome {
+        max-width: 90px;
     }
 }

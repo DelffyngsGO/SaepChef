@@ -14,22 +14,29 @@
 <body>
     <header>
         <div class="Pf"> <!--Perfil-->
-            <button type="button" id="btnFotoPerfil" class="FotoPerfil" title="Alterar foto de perfil">
+            <button type="button" id="btnFotoPerfil" class="FotoPerfil" title="Alterar foto de perfil"
+                aria-label="Alterar foto de perfil">
                 <img id="fotoPerfil" alt="Foto de perfil" hidden>
+                <span id="iniciais" class="Iniciais" aria-hidden="true">V</span>
+                <span class="Camera" aria-hidden="true">Alterar</span>
             </button>
             <input type="file" id="inputFotoPerfil" accept="image/*" hidden>
-            <p class="Handle">@SAEPChef</p>
+
+            <div class="PfInfo">
+                <span id="nomePerfil" class="Nome">Visitante</span>
+                <span id="handlePerfil" class="Handle">@SAEPChef</span>
+            </div>
         </div>
 
         <h1 class="Titulo">SAEPChef</h1>
 
         <div class="LoginRegistrar"> <!--Login-->
-            <button type="button">LOGIN</button>
+            <button type="button" id="btnLogin">LOGIN</button>
         </div>
     </header>
 
     <div class="Pesquisar"> <!--Pesquisar-->
-        <input type="search" id="pesquisa" placeholder="Pesquisar">
+        <input type="search" id="pesquisa" placeholder="Pesquisar por título" aria-label="Pesquisar receitas por título">
     </div>
 
     <div class="Barra">
@@ -46,6 +53,38 @@
     <footer>
         <h2>@SAEPChef©2026</h2>
     </footer>
+
+    <!-- Pop-up: login / registro -->
+    <dialog id="modalAuth" class="Modal ModalAuth" aria-labelledby="tituloAuth">
+        <form id="formAuth" novalidate>
+            <button type="button" id="btnFecharAuth" class="Fechar" aria-label="Fechar">✕</button>
+            <h2 id="tituloAuth">LOGAR</h2>
+
+            <div class="Abas" role="tablist">
+                <button type="button" role="tab" id="abaLogin" class="Aba Ativa" aria-selected="true">Entrar</button>
+                <button type="button" role="tab" id="abaRegistro" class="Aba" aria-selected="false">Registrar</button>
+            </div>
+
+            <label id="campoNome" hidden>
+                Nome
+                <input type="text" id="authNome" autocomplete="name" placeholder="nome">
+            </label>
+
+            <label>
+                E-mail
+                <input type="email" id="authEmail" autocomplete="email" placeholder="email" required>
+            </label>
+
+            <label>
+                Senha
+                <input type="password" id="authSenha" autocomplete="current-password" placeholder="senha" minlength="6" required>
+            </label>
+
+            <p id="authErro" class="Erro" role="alert" hidden></p>
+
+            <button type="submit" id="btnConectar" class="Conectar">CONECTAR</button>
+        </form>
+    </dialog>
 
     <!-- Pop-up: nova receita -->
     <dialog id="modalReceita" class="Modal">
