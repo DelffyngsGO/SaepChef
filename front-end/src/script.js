@@ -1,72 +1,10 @@
 const RECEITAS_POR_PAGINA = 6;
 
-const receitas = [
-    {
-        nome: "Brigadeiro",
-        origem: "Brasil",
-        tipo: "Doce",
-        chef: "SAEPChef1",
-        imagem: "",
-        ingredientes: [
-            "1 lata de leite condensado",
-            "1 colher (sopa) de manteiga",
-            "4 colheres (sopa) de chocolate em pó",
-            "Granulado a gosto",
-        ],
-        preparo:
-            "Misture o leite condensado, a manteiga e o chocolate em uma panela. Cozinhe em fogo baixo, mexendo sempre, até desgrudar do fundo. Deixe esfriar, modele as bolinhas e passe no granulado.",
-    },
-    {
-        nome: "Lasanha à Bolonhesa",
-        origem: "Itália",
-        tipo: "Salgado",
-        chef: "SAEPChef1",
-        imagem: "",
-        ingredientes: [
-            "500 g de massa de lasanha",
-            "500 g de carne moída",
-            "500 ml de molho de tomate",
-            "300 g de queijo mussarela",
-            "300 g de presunto",
-        ],
-        preparo:
-            "Refogue a carne e misture ao molho de tomate. Em um refratário, monte camadas de massa, molho, presunto e queijo. Cubra com queijo e leve ao forno a 200 °C por 30 minutos.",
-    },
-    {
-        nome: "Frango Agridoce",
-        origem: "China",
-        tipo: "Agridoce",
-        chef: "SAEPChef1",
-        imagem: "",
-        ingredientes: [
-            "500 g de peito de frango em cubos",
-            "1 pimentão vermelho",
-            "1/2 xícara de ketchup",
-            "3 colheres (sopa) de açúcar",
-            "3 colheres (sopa) de vinagre",
-            "2 colheres (sopa) de shoyu",
-        ],
-        preparo:
-            "Frite o frango até dourar. Misture ketchup, açúcar, vinagre e shoyu e leve ao fogo até engrossar. Junte o pimentão e o frango, mexa por 3 minutos e sirva com arroz.",
-    },
-    {
-        nome: "Tiramisù",
-        origem: "Itália",
-        tipo: "Doce",
-        chef: "SAEPChef1",
-        imagem: "",
-        ingredientes: [
-            "250 g de queijo mascarpone",
-            "3 ovos",
-            "100 g de açúcar",
-            "200 ml de café forte",
-            "200 g de biscoito champagne",
-            "Cacau em pó para polvilhar",
-        ],
-        preparo:
-            "Bata as gemas com o açúcar e misture ao mascarpone. Incorpore as claras em neve. Molhe os biscoitos no café e monte camadas alternadas com o creme. Leve à geladeira por 4 horas e polvilhe cacau antes de servir.",
-    },
-];
+// Endereço do back-end (ajuste se mudar a porta)
+const API = "";
+
+// As receitas agora vêm do banco, via API
+let receitas = [];
 
 // Elementos
 const lista = document.getElementById("listaReceitas");
@@ -99,6 +37,41 @@ function escapar(texto) {
     const div = document.createElement("div");
     div.textContent = texto;
     return div.innerHTML;
+}
+
+function caminhoImagem(img) {
+    if (!img) return "";
+    if (/^(data:|https?:)/.test(img)) return img;
+    return `/imagens/${img}`;
+}
+
+// ---------- API ----------
+// Converte uma linha do banco para o formato que o front já usa
+function paraFront(r) {
+    return {
+        id: r.id_receita,
+        nome: r.titulo_receita,
+        origem: r.origem_receita,
+        tipo: r.tipo,
+        chef: r.chef,
+        // imagens antigas do seed (ex.: "receita1.jpg") não existem no front
+        imagem: caminhoImagem(r.url_imagem),
+        ingredientes: r.ingredientes || [],
+        preparo: r.preparo || "",
+    };
+}
+
+async function carregarReceitas() {
+    try {
+        const res = await fetch(`${API}/receitas`);
+        if (!res.ok) throw new Error("Resposta inválida");
+        receitas = (await res.json()).map(paraFront);
+        return true;
+    } catch (erro) {
+        console.error(erro);
+        lista.innerHTML = `<p class="SemResultado">Não foi possível carregar as receitas. O servidor está rodando?</p>`;
+        return false;
+    }
 }
 
 // ---------- Ingredientes ----------
@@ -169,11 +142,10 @@ function htmlCard(r) {
                     <p>Origem: ${escapar(r.origem)}</p>
                     <p>Chef: ${escapar(r.chef)}</p>
                 </div>
-                ${
-                    r.imagem
-                        ? `<img src="${r.imagem}" alt="${escapar(r.nome)}">`
-                        : `<div class="Foto"></div>`
-                }
+                ${r.imagem
+            ? `<img src="${r.imagem}" alt="${escapar(r.nome)}">`
+            : `<div class="Foto"></div>`
+        }
             </div>
 
             <hr>
@@ -183,8 +155,8 @@ function htmlCard(r) {
                     <h5>Ingredientes</h5>
                     <ul>
                         ${(r.ingredientes || [])
-                            .map((i) => `<li>${escapar(i)}</li>`)
-                            .join("")}
+            .map((i) => `<li>${escapar(i)}</li>`)
+            .join("")}
                     </ul>
                     <h5>Modo de preparo</h5>
                     <p>${escapar(r.preparo || "")}</p>
@@ -200,19 +172,16 @@ function renderizarPaginacao(totalPaginas) {
         return;
     }
 
-    let botoes = `<button type="button" data-pagina="${paginaAtual - 1}" ${
-        paginaAtual === 1 ? "disabled" : ""
-    }>‹ Anterior</button>`;
+    let botoes = `<button type="button" data-pagina="${paginaAtual - 1}" ${paginaAtual === 1 ? "disabled" : ""
+        }>‹ Anterior</button>`;
 
     for (let p = 1; p <= totalPaginas; p++) {
-        botoes += `<button type="button" data-pagina="${p}" class="${
-            p === paginaAtual ? "Ativa" : ""
-        }" ${p === paginaAtual ? 'aria-current="page"' : ""}>${p}</button>`;
+        botoes += `<button type="button" data-pagina="${p}" class="${p === paginaAtual ? "Ativa" : ""
+            }" ${p === paginaAtual ? 'aria-current="page"' : ""}>${p}</button>`;
     }
 
-    botoes += `<button type="button" data-pagina="${paginaAtual + 1}" ${
-        paginaAtual === totalPaginas ? "disabled" : ""
-    }>Próxima ›</button>`;
+    botoes += `<button type="button" data-pagina="${paginaAtual + 1}" ${paginaAtual === totalPaginas ? "disabled" : ""
+        }>Próxima ›</button>`;
 
     paginacao.innerHTML = `
         <span class="Contador">Página ${paginaAtual} de ${totalPaginas}</span>
@@ -267,7 +236,14 @@ function fecharModal() {
     imagemBase64 = "";
 }
 
-btnCriar.addEventListener("click", () => modal.showModal());
+btnCriar.addEventListener("click", () => {
+    if (!usuarioLogado) {
+        abrirAuth();
+        mostrarErro("Faça login para criar uma receita.");
+        return;
+    }
+    modal.showModal();
+});
 btnCancelar.addEventListener("click", fecharModal);
 
 modal.addEventListener("click", (e) => {
@@ -291,7 +267,7 @@ inputFoto.addEventListener("change", () => {
     leitor.readAsDataURL(arquivo);
 });
 
-form.addEventListener("submit", (e) => {
+form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const ingredientes = lerIngredientes();
@@ -303,15 +279,30 @@ form.addEventListener("submit", (e) => {
         return;
     }
 
-    receitas.push({
-        nome: document.getElementById("nome").value.trim(),
-        origem: document.getElementById("origem").value.trim(),
-        tipo: document.getElementById("tipo").value,
-        chef: document.getElementById("chef").value.trim(),
-        imagem: imagemBase64,
-        ingredientes,
-        preparo: document.getElementById("preparo").value.trim(),
-    });
+    try {
+        const res = await fetch(`${API}/receitas`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                titulo_receita: document.getElementById("nome").value.trim(),
+                origem_receita: document.getElementById("origem").value.trim(),
+                tipo: document.getElementById("tipo").value,
+                ingredientes,
+                preparo: document.getElementById("preparo").value.trim(),
+                url_imagem: imagemBase64,
+                id_usuario: usuarioLogado.id_usuario,
+            }),
+        });
+        if (!res.ok) {
+            const dados = await res.json().catch(() => ({}));
+            throw new Error(dados.erro || "Erro ao salvar");
+        }
+    } catch (erro) {
+        alert("Não foi possível salvar a receita: " + erro.message);
+        return;
+    }
+
+    await carregarReceitas();
 
     // Vai para a última página, onde a nova receita aparece
     paginaAtual = Math.ceil(receitasFiltradas().length / RECEITAS_POR_PAGINA);
@@ -423,8 +414,7 @@ inputFotoPerfil.addEventListener("change", () => {
 });
 
 // ---------- Pop-up: login / registro ----------
-// Aviso: sem back-end, a conta fica só no navegador (localStorage).
-// A senha é guardada como hash SHA-256, mas isto é uma demonstração, não segurança real.
+// Login e registro agora passam pelo back-end. No navegador fica só o usuário logado.
 const btnLogin = document.getElementById("btnLogin");
 const modalAuth = document.getElementById("modalAuth");
 const formAuth = document.getElementById("formAuth");
@@ -456,12 +446,6 @@ function salvarStorage(chave, valor) {
     } catch (erro) {
         console.warn("Não foi possível salvar:", erro);
     }
-}
-
-async function hashSenha(senha) {
-    const dados = new TextEncoder().encode(senha);
-    const buffer = await crypto.subtle.digest("SHA-256", dados);
-    return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 let usuarioLogado = lerStorage("usuarioLogado", null);
@@ -538,20 +522,18 @@ formAuth.addEventListener("submit", async (e) => {
     if (!/^\S+@\S+\.\S+$/.test(email)) return mostrarErro("Informe um e-mail válido.");
     if (senha.length < 6) return mostrarErro("A senha deve ter pelo menos 6 caracteres.");
 
-    const usuarios = lerStorage("usuarios", []);
-    const hash = await hashSenha(senha);
-
-    if (modoRegistro) {
-        if (usuarios.some((u) => u.email === email)) {
-            return mostrarErro("Este e-mail já está cadastrado.");
-        }
-        usuarios.push({ nome, email, hash });
-        salvarStorage("usuarios", usuarios);
-        usuarioLogado = { nome, email };
-    } else {
-        const usuario = usuarios.find((u) => u.email === email && u.hash === hash);
-        if (!usuario) return mostrarErro("E-mail ou senha incorretos.");
-        usuarioLogado = { nome: usuario.nome, email: usuario.email };
+    try {
+        const res = await fetch(`${API}/usuarios${modoRegistro ? "" : "/login"}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(modoRegistro ? { nome, email, senha } : { email, senha }),
+        });
+        const dados = await res.json();
+        if (!res.ok) return mostrarErro(dados.erro || "Erro ao conectar.");
+        usuarioLogado = dados; // { id_usuario, nome, email, tipo, ... }
+    } catch (erro) {
+        console.error(erro);
+        return mostrarErro("Não foi possível falar com o servidor.");
     }
 
     salvarStorage("usuarioLogado", usuarioLogado);
@@ -561,7 +543,10 @@ formAuth.addEventListener("submit", async (e) => {
 });
 
 // ---------- Início ----------
+// Sessão antiga (feita antes do back-end) não tem id_usuario: descarta
+if (usuarioLogado && !usuarioLogado.id_usuario) sair();
+
 atualizarBotaoLogin();
 atualizarPerfil();
 resetarIngredientes();
-renderizarReceitas();
+carregarReceitas().then((ok) => ok && renderizarReceitas());
